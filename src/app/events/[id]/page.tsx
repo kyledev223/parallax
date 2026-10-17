@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/metadata";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { NewsList, NewsListSkeleton } from "@/components/events/NewsList";
 import { OddsCharts, OddsChartsSkeleton } from "@/components/events/OddsCharts";
@@ -54,6 +55,9 @@ async function History({ id }: { id: string }) {
 }
 
 async function News({ id }: { id: string }) {
+  // Request time only: keeps news API calls out of the build, where prerendering
+  // every event page at once would burst through the provider's rate limit.
+  await connection();
   return <NewsList result={await getEventNews(id)} />;
 }
 

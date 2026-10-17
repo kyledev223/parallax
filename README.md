@@ -59,12 +59,12 @@ With news off (the default) the app works fully; event pages say headlines are t
 
 The free plan allows 200 credits a day (30 per 15 minutes) and delays articles by 12 hours, so headlines are 12–48 hours old.
 Searches match article titles, descriptions and keywords (NewsData's `qInMeta`), not full text, so articles that only
-mention a keyword in passing don't appear. If the full keyword query finds nothing, it retries with the event's first
-keyword alone; if that also finds nothing, the page says so rather than showing loosely related stories.
+mention a keyword in passing don't appear. If nothing matches, the page says so rather than showing loosely related stories.
 
-Each event's results are cached for 4 hours in Next's shared fetch cache. That is at most 2 credits per event per
-refresh: about 100–130 credits a day in practice for 16 events (192 worst case), plus up to 32 per deploy.
-If you add many more pairs, upgrade the plan or raise `NEWSDATA_TTL_SECONDS` in `src/lib/news.ts`.
+Rate limits shape the design: the free plan allows 30 requests per 15 minutes and 200 a day. Each event makes exactly one
+request per refresh, results are cached for 4 hours in Next's shared fetch cache, and news is fetched when a visitor opens
+an event page rather than during the build, so deploys don't spend requests. 16 events use at most 96 credits a day.
+If you add more than about 25 pairs, upgrade the plan or raise `NEWSDATA_TTL_SECONDS` in `src/lib/news.ts`.
 Check NewsData.io's current terms for your use case.
 
 ## How the data works

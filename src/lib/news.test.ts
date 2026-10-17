@@ -151,31 +151,13 @@ describe("NewsData.io provider", () => {
     expect((init as { next?: { revalidate?: number } }).next?.revalidate).toBe(NEWSDATA_TTL_SECONDS);
   });
 
-  it("falls back to the main keyword alone when the strict query finds nothing", async () => {
-    const fetchImpl = vi.fn(async (url: string) =>
-      new URL(url).searchParams.get("qInMeta") === "Brewers" ? respond("Brewers rotation set") : respond(),
-    );
-    const res = await fetchNews(brewers, { config: newsConfig(env), fetchImpl });
-    expect(fetchImpl.mock.calls.map(([u]) => new URL(u).searchParams.get("qInMeta"))).toEqual([
-      'Brewers AND "World Series"',
-      "Brewers",
-    ]);
-    expect(res).toMatchObject({ status: "ok", items: [{ title: "Brewers rotation set" }] });
-  });
-
-  it("returns an honest empty result rather than broadening to full text", async () => {
+  it("makes exactly one request per event, even when nothing matches (rate-limit budget)", async () => {
     const fetchImpl = vi.fn(async () => respond());
     expect(await fetchNews(brewers, { config: newsConfig(env), fetchImpl })).toEqual({
       status: "ok",
       items: [],
       provider: "newsdata",
     });
-    expect(fetchImpl).toHaveBeenCalledTimes(2);
-  });
-
-  it("makes a single request when there is only one keyword", async () => {
-    const fetchImpl = vi.fn(async () => respond());
-    await fetchNews({ ...brewers, keywords: ["Brewers"] }, { config: newsConfig(env), fetchImpl });
     expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
 

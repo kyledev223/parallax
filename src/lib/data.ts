@@ -73,7 +73,9 @@ export async function getEventHistory(id: string): Promise<EventHistory | null> 
  * live as long as the provider's TTL (3h for NewsData, 15m otherwise); the
  * underlying HTTP response is also in the shared fetch cache, so a cold
  * serverless instance doesn't spend API quota. Errors are kept only briefly
- * so a rate-limit blip recovers within a couple of minutes.
+ * so a rate-limit blip recovers within minutes. Event pages call this at
+ * request time (after connection()), never during the build, so a deploy
+ * doesn't spend 16 requests at once.
  */
 export async function getEventNews(id: string): Promise<NewsResult> {
   "use cache";
@@ -81,7 +83,8 @@ export async function getEventNews(id: string): Promise<NewsResult> {
   const pair = getPair(id);
   const config = newsConfig();
   const result: NewsResult = pair ? await fetchNews(pair, { config }) : { status: "disabled" };
-  if (result.status === "error") cacheLife({ stale: 60, revalidate: 120, expire: 600 });
+  // Errors (usually a rate limit) retry after 5 minutes rather than hammering a 15-minute window.
+  if (result.status === "error") cacheLife({ stale: 60, revalidate: 300, expire: 900 });
   else cacheLife({ stale: 300, revalidate: config.ttlSeconds, expire: Math.max(3600, config.ttlSeconds * 4) });
   return result;
 }
