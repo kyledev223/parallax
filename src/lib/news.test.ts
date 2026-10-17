@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 import { brewers } from "./__fixtures__/pairs";
-import { buildQuery, fetchNews, newsConfig, parseGdelt, parseRss } from "./news";
+import { buildNewsDataQuery, buildQuery, fetchNews, NEWSDATA_TTL_SECONDS, newsConfig, parseGdelt, parseNewsData, parseRss } from "./news";
 
 const rss = readFileSync(new URL("./__fixtures__/news.rss.xml", import.meta.url), "utf8");
 
@@ -85,5 +85,78 @@ describe("fetchNews", () => {
     const fetchImpl = vi.fn(async () => new Response("Please limit requests", { status: 429 }));
     const res = await fetchNews(brewers, { config: newsConfig({ NEWS_ENABLED: "1" }), fetchImpl });
     expect(res).toMatchObject({ status: "error", provider: "gdelt" });
+  });
+});
+
+describe("NewsData.io provider", () => {
+  const env = { NEWS_ENABLED: "true", NEWSDATA_API_KEY: "pub_test123" };
+
+  it("is chosen automatically when a key is set, with a 3-hour cache", () => {
+    expect(newsConfig(env)).toMatchObject({ enabled: true, provider: "newsdata", ttlSeconds: NEWSDATA_TTL_SECONDS });
+    expect(NEWSDATA_TTL_SECONDS).toBe(3 * 3600);
+  });
+
+  it("stays off without a key, and an explicit provider still wins", () => {
+    expect(newsConfig({ NEWS_ENABLED: "true", NEWS_PROVIDER: "newsdata" }).enabled).toBe(false);
+    expect(newsConfig({ ...env, NEWS_PROVIDER: "gdelt" })).toMatchObject({ provider: "gdelt", ttlSeconds: 900 });
+    expect(newsConfig({ NEWSDATA_API_KEY: "pub_x" }).enabled).toBe(false); // flag still required
+  });
+
+  it("builds explicit AND/OR queries within the free plan's 100-character limit", () => {
+    expect(buildNewsDataQuery(["Federal Reserve", "FOMC", "interest rates"])).toBe(
+      '"Federal Reserve" AND (FOMC OR "interest rates")',
+    );
+    expect(buildNewsDataQuery(["Brewers", "World Series"])).toBe('Brewers AND "World Series"');
+    const long = ["Katie Zacharia", "White House press secretary", "resignation announcement", "briefing room departure"];
+    const q = buildNewsDataQuery(long)!;
+    expect(q.length).toBeLessThanOrEqual(100);
+    expect(q.startsWith('"Katie Zacharia" AND')).toBe(true);
+    expect(buildNewsDataQuery([])).toBeNull();
+  });
+
+  it("parses articles, converts UTC dates and drops flagged duplicates", () => {
+    const items = parseNewsData({
+      status: "success",
+      results: [
+        { title: "Fed signals a December hike", link: "https://www.reuters.com/a", source_name: "Reuters", pubDate: "2026-10-16 14:32:11" },
+        { title: "Same story again", link: "https://ex.com/dup", source_id: "ex", pubDate: "2026-10-16 15:00:00", duplicate: true },
+        { title: "No link", link: null },
+      ],
+    });
+    expect(items).toEqual([
+      { title: "Fed signals a December hike", url: "https://www.reuters.com/a", source: "Reuters", publishedAt: "2026-10-16T14:32:11Z" },
+    ]);
+  });
+
+  it("surfaces NewsData's error envelope as an error", () => {
+    expect(() => parseNewsData({ status: "error", results: { message: "API key invalid" } })).toThrow(/API key invalid/);
+  });
+
+  it("requests /latest with the key and opts into the shared fetch cache", async () => {
+    const fetchImpl = vi.fn(
+      async (_url: string, _init?: RequestInit) =>
+        new Response(JSON.stringify({ status: "success", results: [] }), { status: 200 }),
+    );
+    const res = await fetchNews(brewers, { config: newsConfig(env), fetchImpl });
+    expect(res).toEqual({ status: "ok", items: [], provider: "newsdata" });
+    const [url, init] = fetchImpl.mock.calls[0];
+    const u = new URL(url);
+    expect(u.origin + u.pathname).toBe("https://newsdata.io/api/1/latest");
+    expect(u.searchParams.get("apikey")).toBe("pub_test123");
+    expect(u.searchParams.get("q")).toBe('Brewers AND "World Series"');
+    expect(u.searchParams.get("language")).toBe("en");
+    expect((init as { next?: { revalidate?: number } }).next?.revalidate).toBe(NEWSDATA_TTL_SECONDS);
+  });
+
+  it("reports quota exhaustion as an error, not a crash", async () => {
+    const fetchImpl = vi.fn(async () => new Response('{"status":"error"}', { status: 429 }));
+    expect(await fetchNews(brewers, { config: newsConfig(env), fetchImpl })).toMatchObject({ status: "error", provider: "newsdata" });
+  });
+});
+
+describe("RSS source cleanup", () => {
+  it("shows a domain when a feed puts a URL in <source>", () => {
+    const xml = `<item><title>Fed holds - x</title><link>https://ex.com/a</link><source url="https://streamlinefeed.co.ke">https://streamlinefeed.co.ke/</source></item>`;
+    expect(parseRss(xml)[0].source).toBe("streamlinefeed.co.ke");
   });
 });

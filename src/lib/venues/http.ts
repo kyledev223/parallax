@@ -12,7 +12,13 @@ export class VenueError extends Error {
 
 const USER_AGENT = "Parallax/0.1 (read-only market data)";
 
-type GetOptions = { fetchImpl?: FetchLike; timeoutMs?: number; retries?: number };
+type GetOptions = {
+  fetchImpl?: FetchLike;
+  timeoutMs?: number;
+  retries?: number;
+  /** Extra fetch options, e.g. `{ next: { revalidate } }` to use the shared fetch cache. */
+  init?: RequestInit;
+};
 
 /**
  * GET with a timeout and a single retry on 429/5xx. Errors are thrown as
@@ -22,12 +28,19 @@ async function get<T>(
   url: string,
   accept: string,
   read: (res: Response) => Promise<T>,
-  { fetchImpl = fetch, timeoutMs = 8000, retries = 1 }: GetOptions = {},
+  { fetchImpl = fetch, timeoutMs = 8000, retries = 1, init }: GetOptions = {},
 ): Promise<T> {
   let lastError: unknown;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const res = await fetchImpl(url, {
+        // Venue prices must be fetched fresh: freshness is owned by the `use cache`
+        // wrappers in data.ts (30s for prices). Without an explicit no-store, Next
+        // stores these responses in its fetch cache with a 15-minute default, so a
+        // "refreshed" snapshot could silently reuse old prices. Callers that want
+        // the shared fetch cache (news) pass `init.next` instead.
+        ...(init?.next || init?.cache ? {} : { cache: "no-store" as const }),
+        ...init,
         headers: { accept, "user-agent": USER_AGENT },
         signal: AbortSignal.timeout(timeoutMs),
       });

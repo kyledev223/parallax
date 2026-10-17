@@ -13,15 +13,15 @@ export function NewsList({ result }: { result: NewsResult }) {
   if (result.status === "error") {
     return (
       <p role="status" className="rounded-xl border border-line bg-panel p-6 text-sm text-muted">
-        Headlines couldn&apos;t be loaded right now. The news source may be rate-limiting requests; they&apos;ll return on
-        the next refresh, within 15 minutes.
+        Headlines couldn&apos;t be loaded right now. The news source may be busy; this page tries again within a few
+        minutes.
       </p>
     );
   }
   if (result.items.length === 0) {
     return (
       <p className="rounded-xl border border-line bg-panel p-6 text-sm text-muted">
-        No headlines from the past week matched this event&apos;s keywords.
+        No recent headlines matched this event&apos;s keywords.
       </p>
     );
   }

@@ -131,9 +131,9 @@ export default function AboutPage() {
 
           <Section id="news" title="News">
             <p>
-              When enabled, each event shows recent headlines that match its keywords. A headline next to a move is a lead
-              to check, not evidence that it caused the move. Headlines come from a third-party news index and may be
-              incomplete or late.
+              When enabled, each event shows headlines from the past few days that match its keywords. A headline next to a
+              move is a lead to check, not evidence that it caused the move. Headlines come from a third-party news index,
+              are refreshed every few hours, and may be incomplete or up to a day late.
             </p>
           </Section>
 

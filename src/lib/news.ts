@@ -2,15 +2,22 @@
  * Optional news lookup, keyed by each pair's keywords. Off unless NEWS_ENABLED=true.
  *
  * Providers:
- * - "gdelt" (default): GDELT DOC 2.0 API, free and keyless. Rate-limited to
- *   roughly one request per 5 seconds per IP, so results are cached for 15 minutes.
+ * - "newsdata" (default when NEWSDATA_API_KEY is set): NewsData.io /latest.
+ *   Free plan: 200 credits/day, 30 per 15 minutes, articles delayed 12 hours.
+ *   Responses are cached for 3 hours, which keeps 16 events under ~130 credits/day.
+ * - "gdelt" (default without a key): GDELT DOC 2.0 API, free and keyless, but
+ *   heavily rate-limited (about one request per 5 seconds per IP) and slow.
  * - "rss": any search feed that returns RSS 2.0. Set NEWS_RSS_URL to a template
  *   containing {query}. Check the feed's terms before using it in production.
+ *
+ * Every provider's HTTP request goes through Next's fetch cache
+ * (`next: { revalidate }`), which is shared across server instances, so the
+ * quota isn't spent once per serverless instance. Only 200 responses are cached.
  */
 import type { EventPair, NewsItem } from "./types";
 import { getJson, getText, type FetchLike } from "./venues/http";
 
-export type NewsProvider = "gdelt" | "rss";
+export type NewsProvider = "newsdata" | "gdelt" | "rss";
 
 /** GDELT can be slow; news is non-critical, so give it longer than venue calls. */
 const NEWS_TIMEOUT_MS = 15_000;
@@ -19,17 +26,31 @@ export interface NewsConfig {
   enabled: boolean;
   provider: NewsProvider;
   rssTemplate?: string;
+  apiKey?: string;
   limit: number;
+  /** How long a successful response is reused, in seconds. */
+  ttlSeconds: number;
 }
 
+/** NewsData's free plan delays articles 12 hours, so refetching more often than this buys nothing. */
+export const NEWSDATA_TTL_SECONDS = 3 * 3600;
+const DEFAULT_TTL_SECONDS = 15 * 60;
+
 export function newsConfig(env: Record<string, string | undefined> = process.env): NewsConfig {
-  const enabled = ["1", "true", "yes", "on"].includes((env.NEWS_ENABLED ?? "").toLowerCase());
-  const provider: NewsProvider = env.NEWS_PROVIDER === "rss" ? "rss" : "gdelt";
+  const flag = ["1", "true", "yes", "on"].includes((env.NEWS_ENABLED ?? "").toLowerCase());
+  const apiKey = env.NEWSDATA_API_KEY?.trim() || undefined;
+  const requested = env.NEWS_PROVIDER?.trim().toLowerCase();
+  const provider: NewsProvider =
+    requested === "rss" || requested === "gdelt" || requested === "newsdata" ? requested : apiKey ? "newsdata" : "gdelt";
+  const ready =
+    provider === "newsdata" ? Boolean(apiKey) : provider === "rss" ? Boolean(env.NEWS_RSS_URL?.includes("{query}")) : true;
   return {
-    enabled: enabled && (provider === "gdelt" || Boolean(env.NEWS_RSS_URL?.includes("{query}"))),
+    enabled: flag && ready,
     provider,
     rssTemplate: env.NEWS_RSS_URL,
+    apiKey,
     limit: 8,
+    ttlSeconds: provider === "newsdata" ? NEWSDATA_TTL_SECONDS : DEFAULT_TTL_SECONDS,
   };
 }
 
@@ -42,6 +63,25 @@ export function buildQuery(keywords: string[]): string | null {
   if (rest.length === 0) return quote(head);
   if (rest.length === 1) return `${quote(head)} ${quote(rest[0])}`;
   return `${quote(head)} (${rest.map(quote).join(" OR ")})`;
+}
+
+/**
+ * NewsData syntax: explicit AND/OR, and the free plan caps q at 100
+ * characters, so trailing keywords are dropped until it fits.
+ */
+export function buildNewsDataQuery(keywords: string[], maxLength = 100): string | null {
+  const words = keywords.map((k) => k.trim()).filter(Boolean);
+  for (let n = words.length; n >= 1; n--) {
+    const [head, ...rest] = words.slice(0, n);
+    const q =
+      rest.length === 0
+        ? quote(head)
+        : rest.length === 1
+          ? `${quote(head)} AND ${quote(rest[0])}`
+          : `${quote(head)} AND (${rest.map(quote).join(" OR ")})`;
+    if (q.length <= maxLength) return q;
+  }
+  return null;
 }
 
 const ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
@@ -75,7 +115,12 @@ export function parseRss(xml: string): NewsItem[] {
     const date = tag(block, "pubDate");
     const published = date ? new Date(date) : null;
     // Google-style feeds append " - Source" to the title; prefer the <source> tag when present.
-    const source = tag(block, "source") ?? new URL(url).hostname.replace(/^www\./, "");
+    const rawSource = tag(block, "source");
+    // Some feeds put a URL in <source>; show just its domain.
+    const source =
+      rawSource && !/^https?:\/\//.test(rawSource)
+        ? rawSource
+        : new URL(rawSource || url).hostname.replace(/^www\./, "");
     items.push({
       title: title.endsWith(` - ${source}`) ? title.slice(0, -(source.length + 3)) : title,
       url,
@@ -110,6 +155,36 @@ export function parseGdelt(json: { articles?: GdeltArticle[] } | null | undefine
     }));
 }
 
+interface NewsDataArticle {
+  title?: string | null;
+  link?: string | null;
+  source_name?: string | null;
+  source_id?: string | null;
+  pubDate?: string | null;
+  duplicate?: boolean | null;
+}
+
+/** NewsData pubDate is "YYYY-MM-DD HH:MM:SS" in UTC. */
+function newsDataDate(s?: string | null): string {
+  const m = s?.match(/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})$/);
+  return m ? `${m[1]}T${m[2]}Z` : "";
+}
+
+export function parseNewsData(json: { status?: string; results?: unknown } | null | undefined): NewsItem[] {
+  if (json?.status !== "success" || !Array.isArray(json.results)) {
+    const message = (json?.results as { message?: string } | undefined)?.message;
+    throw new Error(`NewsData returned an error${message ? `: ${message}` : ""}`);
+  }
+  return (json.results as NewsDataArticle[])
+    .filter((a) => a.title && a.link && /^https?:\/\//.test(a.link) && !a.duplicate)
+    .map((a) => ({
+      title: a.title!.trim(),
+      url: a.link!,
+      source: a.source_name || a.source_id || new URL(a.link!).hostname.replace(/^www\./, ""),
+      publishedAt: newsDataDate(a.pubDate),
+    }));
+}
+
 function dedupe(items: NewsItem[], limit: number): NewsItem[] {
   const seen = new Set<string>();
   return items
@@ -133,13 +208,31 @@ export async function fetchNews(
   { config = newsConfig(), fetchImpl }: { config?: NewsConfig; fetchImpl?: FetchLike } = {},
 ): Promise<NewsResult> {
   if (!config.enabled) return { status: "disabled" };
-  const q = buildQuery(pair.keywords.length ? pair.keywords : [pair.title]);
+  const keywords = pair.keywords.length ? pair.keywords : [pair.title];
+  const q = buildQuery(keywords);
   if (!q) return { status: "ok", items: [], provider: config.provider };
+  // Shared, persistent fetch cache; only successful responses are stored.
+  const init: RequestInit = { next: { revalidate: config.ttlSeconds, tags: ["news"] } };
 
   try {
+    if (config.provider === "newsdata") {
+      const qs = new URLSearchParams({
+        apikey: config.apiKey!,
+        q: buildNewsDataQuery(keywords) ?? q,
+        language: "en",
+        removeduplicate: "1",
+      });
+      const json = await getJson<{ status?: string; results?: unknown }>(`https://newsdata.io/api/1/latest?${qs}`, {
+        fetchImpl,
+        retries: 0,
+        timeoutMs: NEWS_TIMEOUT_MS,
+        init,
+      });
+      return { status: "ok", items: dedupe(parseNewsData(json), config.limit), provider: "newsdata" };
+    }
     if (config.provider === "rss") {
       const url = config.rssTemplate!.replace("{query}", encodeURIComponent(q));
-      const xml = await getText(url, { fetchImpl, retries: 0, timeoutMs: NEWS_TIMEOUT_MS });
+      const xml = await getText(url, { fetchImpl, retries: 0, timeoutMs: NEWS_TIMEOUT_MS, init });
       return { status: "ok", items: dedupe(parseRss(xml), config.limit), provider: "rss" };
     }
     const qs = new URLSearchParams({
@@ -154,6 +247,7 @@ export async function fetchNews(
       fetchImpl,
       retries: 0,
       timeoutMs: NEWS_TIMEOUT_MS,
+      init,
     });
     return { status: "ok", items: dedupe(parseGdelt(json), config.limit), provider: "gdelt" };
   } catch (e) {

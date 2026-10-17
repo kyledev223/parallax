@@ -131,7 +131,8 @@ export default async function EventPage({ params }: PageProps<"/events/[id]">) {
               In the news
             </h2>
             <p className="mt-2 max-w-[40ch] text-muted">
-              Recent headlines matching this event. A headline next to a move is a lead to check, not proof of cause.
+              Headlines from the past few days that match this event. A headline next to a move is a lead to check, not
+              proof of cause.
             </p>
           </div>
           <BlockError label="headlines">

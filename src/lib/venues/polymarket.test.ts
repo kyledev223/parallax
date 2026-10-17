@@ -85,3 +85,11 @@ describe("fetchers", () => {
     expect(points.at(-1)).toEqual({ t: 1792182497, p: 0.6555 });
   });
 });
+
+describe("fetch caching", () => {
+  it("fetches venue prices with no-store so only the 30s snapshot cache applies", async () => {
+    const fetchImpl = vi.fn(async (_url: string, _init?: RequestInit) => json(markets));
+    await fetchPolymarketMarkets([brewersMarket.slug], fetchImpl);
+    expect(fetchImpl.mock.calls[0][1]?.cache).toBe("no-store");
+  });
+});

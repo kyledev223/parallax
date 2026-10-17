@@ -5,7 +5,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { getPair, getPairs } from "./event-map";
-import { fetchNews, type NewsResult } from "./news";
+import { fetchNews, newsConfig, type NewsResult } from "./news";
 import { loadSnapshot, type QuoteMemory, type Snapshot } from "./snapshot";
 import type { HistoryPoint, VenueId } from "./types";
 import { fetchKalshiHistory } from "./venues/kalshi";
@@ -68,12 +68,20 @@ export async function getEventHistory(id: string): Promise<EventHistory | null> 
   };
 }
 
-/** Related headlines, when the news feature flag is on. Cached for 15 minutes. */
+/**
+ * Related headlines, when the news feature flag is on. Successful results
+ * live as long as the provider's TTL (3h for NewsData, 15m otherwise); the
+ * underlying HTTP response is also in the shared fetch cache, so a cold
+ * serverless instance doesn't spend API quota. Errors are kept only briefly
+ * so a rate-limit blip recovers within a couple of minutes.
+ */
 export async function getEventNews(id: string): Promise<NewsResult> {
   "use cache";
-  cacheLife({ stale: 300, revalidate: 900, expire: 3600 });
   cacheTag(`news:${id}`);
   const pair = getPair(id);
-  if (!pair) return { status: "disabled" };
-  return fetchNews(pair);
+  const config = newsConfig();
+  const result: NewsResult = pair ? await fetchNews(pair, { config }) : { status: "disabled" };
+  if (result.status === "error") cacheLife({ stale: 60, revalidate: 120, expire: 600 });
+  else cacheLife({ stale: 300, revalidate: config.ttlSeconds, expire: Math.max(3600, config.ttlSeconds * 4) });
+  return result;
 }
