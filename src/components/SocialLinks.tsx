@@ -25,7 +25,7 @@ export type SocialLink = { key: "twitter" | "pumpfun"; href: string; label: stri
 /** Configured social links only, in display order. */
 export function socialLinks(): SocialLink[] {
   const out: SocialLink[] = [];
-  if (SITE.social.twitter) out.push({ key: "twitter", href: SITE.social.twitter, label: "Parallax on X", Icon: XIcon });
-  if (SITE.social.pumpfun) out.push({ key: "pumpfun", href: SITE.social.pumpfun, label: "Parallax on pump.fun", Icon: PumpFunIcon });
+  if (SITE.social.twitter) out.push({ key: "twitter", href: SITE.social.twitter, label: "Plax on X", Icon: XIcon });
+  if (SITE.social.pumpfun) out.push({ key: "pumpfun", href: SITE.social.pumpfun, label: "Plax on pump.fun", Icon: PumpFunIcon });
   return out;
 }

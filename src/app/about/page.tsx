@@ -8,7 +8,7 @@ import { MAX_MID_SPREAD } from "@/lib/venues/price";
 
 export const metadata: Metadata = pageMetadata({
   title: "Methodology",
-  description: "How Parallax pairs markets across venues, computes the gap, handles stale data, and where it falls short.",
+  description: "How Plax pairs markets across venues, computes the gap, handles stale data, and where it falls short.",
   path: "/about",
 });
 
@@ -45,7 +45,7 @@ export default function AboutPage() {
         <header className="lg:col-span-2">
           <h1 className="text-[clamp(2.75rem,6vw,4.5rem)] leading-none">Methodology</h1>
           <p className="mt-4 max-w-[60ch] text-[17px] leading-relaxed text-muted">
-            Parallax compares what different prediction markets charge for the same outcome. This page explains exactly how,
+            Plax compares what different prediction markets charge for the same outcome. This page explains exactly how,
             and where the comparison can mislead.
           </p>
         </header>
@@ -161,7 +161,7 @@ export default function AboutPage() {
               </li>
             </ul>
             <p>
-              Parallax is not affiliated with Polymarket or Kalshi. Read the{" "}
+              Plax is not affiliated with Polymarket or Kalshi. Read the{" "}
               <Link href="/risk" className="text-accent underline decoration-accent/50 underline-offset-4 hover:decoration-accent">
                 risk disclaimer
               </Link>

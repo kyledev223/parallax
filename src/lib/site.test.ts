@@ -3,9 +3,9 @@ import { pumpFunUrl, twitterUrl } from "./site";
 
 describe("social links", () => {
   it("accepts a handle with or without @, or a full URL", () => {
-    expect(twitterUrl("@parallax")).toBe("https://x.com/parallax");
-    expect(twitterUrl("parallax")).toBe("https://x.com/parallax");
-    expect(twitterUrl("https://x.com/parallax")).toBe("https://x.com/parallax");
+    expect(twitterUrl("@plax")).toBe("https://x.com/plax");
+    expect(twitterUrl("plax")).toBe("https://x.com/plax");
+    expect(twitterUrl("https://x.com/plax")).toBe("https://x.com/plax");
     expect(twitterUrl("  ")).toBeNull();
   });
 

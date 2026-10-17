@@ -25,7 +25,7 @@ export function pumpFunUrl(ca: string): string | null {
 }
 
 export const SITE = {
-  name: "Parallax",
+  name: "Plax",
   description:
     "Compare prediction-market odds for the same event across Polymarket and Kalshi. See the gap in percentage points, and the news behind the move. Free, no account needed.",
   url: siteUrl(),

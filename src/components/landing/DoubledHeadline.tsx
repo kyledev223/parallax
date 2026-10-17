@@ -10,7 +10,7 @@ import { useEffect, useRef } from "react";
  * drifts out from behind the headline; with a fine pointer the offset follows
  * the cursor a little. Reduced motion: static offset.
  */
-export function ParallaxHeadline({ text, className = "" }: { text: string; className?: string }) {
+export function DoubledHeadline({ text, className = "" }: { text: string; className?: string }) {
   const ref = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {

@@ -6,12 +6,12 @@ import type { Metadata } from "next";
  * all three together. Images come from the nearest opengraph-image file.
  */
 export function pageMetadata({ title, description, path }: { title: string; description: string; path: string }): Metadata {
-  const full = `${title} · Parallax`;
+  const full = `${title} · Plax`;
   return {
     title,
     description,
     alternates: { canonical: path },
-    openGraph: { type: "website", siteName: "Parallax", title: full, description, url: path },
+    openGraph: { type: "website", siteName: "Plax", title: full, description, url: path },
     twitter: { card: "summary_large_image", title: full, description },
   };
 }

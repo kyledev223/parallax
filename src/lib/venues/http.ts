@@ -10,7 +10,7 @@ export class VenueError extends Error {
   }
 }
 
-const USER_AGENT = "Parallax/0.1 (read-only market data)";
+const USER_AGENT = "Plax/0.1 (read-only market data)";
 
 type GetOptions = {
   fetchImpl?: FetchLike;

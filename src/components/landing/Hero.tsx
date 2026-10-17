@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ParallaxHeadline } from "./ParallaxHeadline";
+import { DoubledHeadline } from "./DoubledHeadline";
 
 /** `preview` is the framed screener, passed in so it can stream live data. */
 export function Hero({ preview }: { preview: React.ReactNode }) {
@@ -13,7 +13,7 @@ export function Hero({ preview }: { preview: React.ReactNode }) {
         <p className="text-sm text-muted">
           <span className="text-fg">Polymarket</span> · <span className="text-fg">Kalshi</span> · More soon
         </p>
-        <ParallaxHeadline
+        <DoubledHeadline
           text="The same event, priced twice."
           className="mt-6 max-w-[15ch] text-[clamp(3rem,8.6vw,7.25rem)] leading-[0.92]"
         />

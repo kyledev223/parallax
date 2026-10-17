@@ -7,7 +7,7 @@ import { Eyebrow } from "../ui/Mark";
 const QUESTIONS: { q: string; a: React.ReactNode }[] = [
   {
     q: "Is it free?",
-    a: "Yes. Parallax is free to use and there is no account to create. It reads public market data and doesn't sell anything.",
+    a: "Yes. Plax is free to use and there is no account to create. It reads public market data and doesn't sell anything.",
   },
   {
     q: "What is a gap?",

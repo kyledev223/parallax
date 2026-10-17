@@ -23,19 +23,19 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: "Parallax · The same event, priced twice",
-    template: "%s · Parallax",
+    default: "Plax · The same event, priced twice",
+    template: "%s · Plax",
   },
   description: SITE.description,
   openGraph: {
     type: "website",
-    siteName: "Parallax",
-    title: "Parallax · The same event, priced twice",
+    siteName: "Plax",
+    title: "Plax · The same event, priced twice",
     description: SITE.description,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Parallax · The same event, priced twice",
+    title: "Plax · The same event, priced twice",
     description: SITE.description,
   },
 };

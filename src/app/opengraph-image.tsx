@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { C, Frame, OG_SIZE, ogFonts, Wordmark } from "@/components/og/shared";
 
-export const alt = "Parallax: the same event, priced twice. Compare Polymarket and Kalshi odds.";
+export const alt = "Plax: the same event, priced twice. Compare Polymarket and Kalshi odds.";
 export const size = OG_SIZE;
 export const contentType = "image/png";
 

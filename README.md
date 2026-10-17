@@ -1,4 +1,4 @@
-# Parallax
+# Plax
 
 A free, no-signup terminal that compares prediction-market odds for the **same event** across venues
 (Polymarket and Kalshi), shows the gap in percentage points, and surfaces news that may explain moves.
@@ -211,5 +211,5 @@ Notes:
 
 ## Disclaimer
 
-Parallax shows public market data for information only. It is not financial advice and doesn't offer trading.
+Plax shows public market data for information only. It is not financial advice and doesn't offer trading.
 It is not affiliated with Polymarket or Kalshi. See [`/risk`](src/app/risk/page.tsx).

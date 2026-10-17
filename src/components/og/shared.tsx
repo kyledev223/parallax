@@ -44,7 +44,7 @@ export function Wordmark() {
         <circle cx="8.5" cy="9" r="6.75" stroke={C.accent} strokeWidth="1.5" />
         <circle cx="15.5" cy="9" r="6.75" stroke={C.accent} strokeWidth="1.5" opacity="0.55" />
       </svg>
-      <div style={{ fontFamily: "Sans", fontWeight: 500, fontSize: 24, letterSpacing: 8, color: C.text }}>PARALLAX</div>
+      <div style={{ fontFamily: "Sans", fontWeight: 500, fontSize: 24, letterSpacing: 8, color: C.text }}>PLAX</div>
     </div>
   );
 }

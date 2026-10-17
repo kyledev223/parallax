@@ -6,6 +6,7 @@ import { pp } from "@/lib/format";
 export type AlertOption = { id: string; shortName: string; gapPp: number | null };
 type SavedAlert = { eventId: string; thresholdPp: number; createdAt: string };
 
+// Storage key keeps the original name so alerts saved before the rename still load.
 const KEY = "parallax.alerts.v1";
 
 function load(): SavedAlert[] {

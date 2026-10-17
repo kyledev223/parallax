@@ -14,9 +14,9 @@ const LINKS = [
 
 export function Wordmark() {
   return (
-    <Link href="/" className="flex items-center gap-2.5 text-fg" aria-label="Parallax home">
+    <Link href="/" className="flex items-center gap-2.5 text-fg" aria-label="Plax home">
       <Mark size={22} className="text-accent" />
-      <span className="text-[13px] font-semibold uppercase tracking-[0.32em]">Parallax</span>
+      <span className="text-[13px] font-semibold uppercase tracking-[0.32em]">Plax</span>
     </Link>
   );
 }

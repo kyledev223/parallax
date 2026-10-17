@@ -66,7 +66,7 @@ export function Footer() {
       </div>
       <div className="border-t border-line">
         <p className="mx-auto max-w-6xl px-4 py-6 text-xs leading-relaxed text-muted sm:px-6">
-          Parallax shows public market prices for information only. It is not financial advice, and it does not offer
+          Plax shows public market prices for information only. It is not financial advice, and it does not offer
           trading. Prices can be delayed or wrong; check the venue before acting.
         </p>
       </div>

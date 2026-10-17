@@ -90,7 +90,7 @@ export default function Home() {
           reverse
           eyebrow="Movers"
           title="Ask why it moved before you ask whether to bet."
-          body="When the odds jump, Parallax lines the move up against recent headlines for that event, so you can see what the market may be reacting to."
+          body="When the odds jump, Plax lines the move up against recent headlines for that event, so you can see what the market may be reacting to."
           bullets={[
             "Biggest 24-hour moves across both venues",
             "Headlines matched to each event's keywords",

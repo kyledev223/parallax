@@ -1,5 +1,6 @@
 import { WIDE_GAP_PP } from "@/lib/gap";
 import { pct, pp, shortDate, usdCompact } from "@/lib/format";
+import { SITE } from "@/lib/site";
 import type { EventRow } from "@/lib/types";
 
 /** A non-interactive rendering of the /events screener, framed in a faux browser. */
@@ -23,7 +24,7 @@ export function ScreenerPreview({ rows }: { rows: EventRow[] }) {
             <span className="size-2.5 rounded-full bg-line" />
           </div>
           <div className="mx-auto w-full max-w-sm truncate rounded-md border border-line bg-bg px-3 py-1 text-center text-xs text-muted">
-            parallax.markets/events
+            {new URL(SITE.url).host}/events
           </div>
           <div className="w-[42px]" aria-hidden="true" />
         </div>
