@@ -9,8 +9,8 @@ function siteUrl(): string {
  * Social links. Leave a value empty to hide its button; nothing renders a dead link.
  * Fill these in directly, or set the env vars (env wins).
  */
-const TWITTER = process.env.NEXT_PUBLIC_TWITTER ?? ""; // "@handle", "handle" or a full x.com URL
-const PUMPFUN_CA = process.env.NEXT_PUBLIC_PUMPFUN_CA ?? ""; // token contract address
+const TWITTER = process.env.NEXT_PUBLIC_TWITTER ?? "https://x.com/plaxdotfun"; // "@handle", "handle" or a full x.com URL
+const PUMPFUN_CA = process.env.NEXT_PUBLIC_PUMPFUN_CA ?? "GoDi2gCvxPUwYwg9sfcqkz52Dkgy3ii2kbKQbZgnpump"; // token contract address
 
 export function twitterUrl(value: string): string | null {
   const v = value.trim();
