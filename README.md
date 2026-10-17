@@ -43,7 +43,8 @@ All optional. Copy `.env.example` to `.env.local` to set them locally.
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | Vercel production URL, else `http://localhost:3000` | Absolute base for canonical links, OpenGraph images and the sitemap. Set it when you use a custom domain. |
-| `NEXT_PUBLIC_GITHUB_URL` | `https://github.com/kyledev223/parallax` | Target of the GitHub icon in the nav and footer |
+| `NEXT_PUBLIC_TWITTER` | none | X (Twitter) account for the nav and footer button: `@handle`, `handle` or a full URL. Hidden when empty. |
+| `NEXT_PUBLIC_PUMPFUN_CA` | none | Token contract address; the pump.fun button links to `pump.fun/coin/<CA>`. Hidden when empty. |
 | `NEWS_ENABLED` | off | Feature flag for the "In the news" section on event pages (`true` to enable) |
 | `NEWSDATA_API_KEY` | none | **Recommended news source.** A free [NewsData.io](https://newsdata.io) key (no card needed). When set, it becomes the default provider. |
 | `NEWS_PROVIDER` | `newsdata` if a key is set, else `gdelt` | Force a provider: `newsdata`, `gdelt` (free and keyless, but frequently rate-limited and slow) or `rss` |

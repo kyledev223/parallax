@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { SITE } from "@/lib/site";
 import { Wordmark } from "./Nav";
+import { socialLinks } from "./SocialLinks";
 
 const COLUMNS = [
   {
@@ -17,7 +17,11 @@ const COLUMNS = [
     links: [
       { href: "/about", label: "Methodology" },
       { href: "/#faq", label: "FAQ" },
-      { href: SITE.github, label: "Source on GitHub", external: true },
+      ...socialLinks().map((s) => ({
+        href: s.href,
+        label: s.key === "twitter" ? "X (Twitter)" : "pump.fun",
+        external: true,
+      })),
     ],
   },
   {
@@ -46,7 +50,7 @@ export function Footer() {
               {col.links.map((l) => (
                 <li key={l.label}>
                   {"external" in l ? (
-                    <a href={l.href} className="hover:text-fg">
+                    <a href={l.href} target="_blank" rel="noopener noreferrer" className="hover:text-fg">
                       {l.label}
                     </a>
                   ) : (

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useId, useState } from "react";
-import { SITE } from "@/lib/site";
+import { socialLinks } from "./SocialLinks";
 import { Mark } from "./ui/Mark";
 
 const LINKS = [
@@ -11,14 +11,6 @@ const LINKS = [
   { href: "/#alerts", label: "Alerts" },
   { href: "/about", label: "About" },
 ];
-
-export function GitHubIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true" className={className}>
-      <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38v-1.34c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.72 1.22 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8Z" />
-    </svg>
-  );
-}
 
 export function Wordmark() {
   return (
@@ -30,6 +22,7 @@ export function Wordmark() {
 }
 
 export function Nav() {
+  const social = socialLinks();
   const [open, setOpen] = useState(false);
   const menuId = useId();
 
@@ -56,13 +49,23 @@ export function Nav() {
         </ul>
 
         <div className="ml-auto flex items-center gap-3">
-          <a
-            href={SITE.github}
-            className="hidden rounded p-2 text-muted transition-colors hover:text-fg sm:block"
-            aria-label="Parallax on GitHub"
-          >
-            <GitHubIcon />
-          </a>
+          {social.length > 0 && (
+            <ul className="hidden items-center gap-1 sm:flex">
+              {social.map(({ key, href, label, Icon }) => (
+                <li key={key}>
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${label} (opens in a new tab)`}
+                    className="flex size-9 items-center justify-center rounded-md text-muted transition-colors hover:text-fg"
+                  >
+                    <Icon />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
           <Link
             href="/events"
             className="rounded-md bg-accent px-3.5 py-2 text-sm font-medium text-bg transition-colors hover:bg-accent-hover"
@@ -93,11 +96,19 @@ export function Nav() {
               </Link>
             </li>
           ))}
-          <li>
-            <a href={SITE.github} className="flex items-center gap-2 py-3 text-muted hover:text-fg">
-              <GitHubIcon /> GitHub
-            </a>
-          </li>
+          {social.map(({ key, href, label, Icon }) => (
+            <li key={key}>
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 py-3 text-muted hover:text-fg"
+              >
+                <Icon /> {key === "twitter" ? "X (Twitter)" : "pump.fun"}
+                <span className="sr-only">({label}, opens in a new tab)</span>
+              </a>
+            </li>
+          ))}
         </ul>
       </div>
     </header>
