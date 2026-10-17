@@ -91,9 +91,9 @@ describe("fetchNews", () => {
 describe("NewsData.io provider", () => {
   const env = { NEWS_ENABLED: "true", NEWSDATA_API_KEY: "pub_test123" };
 
-  it("is chosen automatically when a key is set, with a 3-hour cache", () => {
+  it("is chosen automatically when a key is set, with a 4-hour cache", () => {
     expect(newsConfig(env)).toMatchObject({ enabled: true, provider: "newsdata", ttlSeconds: NEWSDATA_TTL_SECONDS });
-    expect(NEWSDATA_TTL_SECONDS).toBe(3 * 3600);
+    expect(NEWSDATA_TTL_SECONDS).toBe(4 * 3600);
   });
 
   it("stays off without a key, and an explicit provider still wins", () => {
@@ -132,20 +132,51 @@ describe("NewsData.io provider", () => {
     expect(() => parseNewsData({ status: "error", results: { message: "API key invalid" } })).toThrow(/API key invalid/);
   });
 
-  it("requests /latest with the key and opts into the shared fetch cache", async () => {
-    const fetchImpl = vi.fn(
-      async (_url: string, _init?: RequestInit) =>
-        new Response(JSON.stringify({ status: "success", results: [] }), { status: 200 }),
-    );
+  const article = (title: string) => ({ title, link: `https://ex.com/${encodeURIComponent(title)}`, source_name: "Ex", pubDate: "2026-10-16 12:00:00" });
+  const respond = (...titles: string[]) =>
+    new Response(JSON.stringify({ status: "success", results: titles.map(article) }), { status: 200 });
+
+  it("searches metadata only (qInMeta), not full text, via the shared fetch cache", async () => {
+    const fetchImpl = vi.fn(async (_url: string, _init?: RequestInit) => respond("Brewers take Game 1"));
     const res = await fetchNews(brewers, { config: newsConfig(env), fetchImpl });
-    expect(res).toEqual({ status: "ok", items: [], provider: "newsdata" });
+    expect(res).toMatchObject({ status: "ok", provider: "newsdata", items: [{ title: "Brewers take Game 1" }] });
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
     const [url, init] = fetchImpl.mock.calls[0];
     const u = new URL(url);
     expect(u.origin + u.pathname).toBe("https://newsdata.io/api/1/latest");
     expect(u.searchParams.get("apikey")).toBe("pub_test123");
-    expect(u.searchParams.get("q")).toBe('Brewers AND "World Series"');
+    expect(u.searchParams.get("qInMeta")).toBe('Brewers AND "World Series"');
+    expect(u.searchParams.has("q")).toBe(false);
     expect(u.searchParams.get("language")).toBe("en");
     expect((init as { next?: { revalidate?: number } }).next?.revalidate).toBe(NEWSDATA_TTL_SECONDS);
+  });
+
+  it("falls back to the main keyword alone when the strict query finds nothing", async () => {
+    const fetchImpl = vi.fn(async (url: string) =>
+      new URL(url).searchParams.get("qInMeta") === "Brewers" ? respond("Brewers rotation set") : respond(),
+    );
+    const res = await fetchNews(brewers, { config: newsConfig(env), fetchImpl });
+    expect(fetchImpl.mock.calls.map(([u]) => new URL(u).searchParams.get("qInMeta"))).toEqual([
+      'Brewers AND "World Series"',
+      "Brewers",
+    ]);
+    expect(res).toMatchObject({ status: "ok", items: [{ title: "Brewers rotation set" }] });
+  });
+
+  it("returns an honest empty result rather than broadening to full text", async () => {
+    const fetchImpl = vi.fn(async () => respond());
+    expect(await fetchNews(brewers, { config: newsConfig(env), fetchImpl })).toEqual({
+      status: "ok",
+      items: [],
+      provider: "newsdata",
+    });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+
+  it("makes a single request when there is only one keyword", async () => {
+    const fetchImpl = vi.fn(async () => respond());
+    await fetchNews({ ...brewers, keywords: ["Brewers"] }, { config: newsConfig(env), fetchImpl });
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
 
   it("reports quota exhaustion as an error, not a crash", async () => {

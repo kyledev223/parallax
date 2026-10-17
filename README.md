@@ -58,8 +58,13 @@ With news off (the default) the app works fully; event pages say headlines are t
 3. Redeploy.
 
 The free plan allows 200 credits a day (30 per 15 minutes) and delays articles by 12 hours, so headlines are 12–48 hours old.
-Each event's results are cached for 3 hours in Next's shared fetch cache, which keeps 16 events at roughly 130 credits a day,
-plus 16 per deploy. If you add many more pairs, upgrade the plan or raise `NEWSDATA_TTL_SECONDS` in `src/lib/news.ts`.
+Searches match article titles, descriptions and keywords (NewsData's `qInMeta`), not full text, so articles that only
+mention a keyword in passing don't appear. If the full keyword query finds nothing, it retries with the event's first
+keyword alone; if that also finds nothing, the page says so rather than showing loosely related stories.
+
+Each event's results are cached for 4 hours in Next's shared fetch cache. That is at most 2 credits per event per
+refresh: about 100–130 credits a day in practice for 16 events (192 worst case), plus up to 32 per deploy.
+If you add many more pairs, upgrade the plan or raise `NEWSDATA_TTL_SECONDS` in `src/lib/news.ts`.
 Check NewsData.io's current terms for your use case.
 
 ## How the data works
@@ -90,7 +95,7 @@ Each refresh makes **one batched request per venue** for all pairs.
 - **Price rule, the same for both venues:** use the bid/ask midpoint when the spread is ≤ $0.10, otherwise the last trade.
 - **Gap** = Polymarket yes% − Kalshi yes%, in percentage points, rounded to 0.1.
 - **Stale:** a gap is stale when either price is more than 10 minutes old. Kalshi has no price timestamp, so its `lastUpdated` is the time we read it. If a venue fails, the last good quote is kept in memory and flagged stale as it ages; with no quote at all, that venue shows as unavailable.
-- **Freshness:** the snapshot is cached with `cacheLife({ stale: 30, revalidate: 30 })`, and open pages call `router.refresh()` every 30 seconds while visible. Displayed prices are typically 30–60 seconds old. History refreshes every minute; news every 3 hours with NewsData.io (15 minutes for other providers).
+- **Freshness:** the snapshot is cached with `cacheLife({ stale: 30, revalidate: 30 })`, and open pages call `router.refresh()` every 30 seconds while visible. Displayed prices are typically 30–60 seconds old. History refreshes every minute; news every 4 hours with NewsData.io (15 minutes for other providers).
 - **Fetch cache:** venue requests use `cache: "no-store"` so the 30-second `use cache` layer is the only freshness control.
   Without it, Next stores fetch responses with a 15-minute default and a "refreshed" snapshot can reuse old prices.
   News requests deliberately use the shared fetch cache (`next: { revalidate }`) so the API quota isn't spent per server instance.

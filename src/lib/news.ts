@@ -4,7 +4,11 @@
  * Providers:
  * - "newsdata" (default when NEWSDATA_API_KEY is set): NewsData.io /latest.
  *   Free plan: 200 credits/day, 30 per 15 minutes, articles delayed 12 hours.
- *   Responses are cached for 3 hours, which keeps 16 events under ~130 credits/day.
+ *   Searches title + description + keywords (qInMeta), not full text, so an
+ *   article that merely mentions a keyword doesn't rank. If the strict query
+ *   finds nothing, it retries with the main keyword alone (still qInMeta).
+ *   Responses are cached for 4 hours: at most 2 credits per event per refresh,
+ *   so 16 events stay under ~130 credits/day in practice (192 worst case).
  * - "gdelt" (default without a key): GDELT DOC 2.0 API, free and keyless, but
  *   heavily rate-limited (about one request per 5 seconds per IP) and slow.
  * - "rss": any search feed that returns RSS 2.0. Set NEWS_RSS_URL to a template
@@ -33,7 +37,7 @@ export interface NewsConfig {
 }
 
 /** NewsData's free plan delays articles 12 hours, so refetching more often than this buys nothing. */
-export const NEWSDATA_TTL_SECONDS = 3 * 3600;
+export const NEWSDATA_TTL_SECONDS = 4 * 3600;
 const DEFAULT_TTL_SECONDS = 15 * 60;
 
 export function newsConfig(env: Record<string, string | undefined> = process.env): NewsConfig {
@@ -216,19 +220,22 @@ export async function fetchNews(
 
   try {
     if (config.provider === "newsdata") {
-      const qs = new URLSearchParams({
-        apikey: config.apiKey!,
-        q: buildNewsDataQuery(keywords) ?? q,
-        language: "en",
-        removeduplicate: "1",
-      });
-      const json = await getJson<{ status?: string; results?: unknown }>(`https://newsdata.io/api/1/latest?${qs}`, {
-        fetchImpl,
-        retries: 0,
-        timeoutMs: NEWS_TIMEOUT_MS,
-        init,
-      });
-      return { status: "ok", items: dedupe(parseNewsData(json), config.limit), provider: "newsdata" };
+      // Strict query first, then the main keyword alone. Both search metadata only.
+      const attempts = [...new Set([buildNewsDataQuery(keywords), buildNewsDataQuery(keywords.slice(0, 1))])].filter(
+        (x): x is string => Boolean(x),
+      );
+      for (const qInMeta of attempts) {
+        const qs = new URLSearchParams({ apikey: config.apiKey!, qInMeta, language: "en", removeduplicate: "1" });
+        const json = await getJson<{ status?: string; results?: unknown }>(`https://newsdata.io/api/1/latest?${qs}`, {
+          fetchImpl,
+          retries: 0,
+          timeoutMs: NEWS_TIMEOUT_MS,
+          init,
+        });
+        const items = dedupe(parseNewsData(json), config.limit);
+        if (items.length) return { status: "ok", items, provider: "newsdata" };
+      }
+      return { status: "ok", items: [], provider: "newsdata" };
     }
     if (config.provider === "rss") {
       const url = config.rssTemplate!.replace("{query}", encodeURIComponent(q));
