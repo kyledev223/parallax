@@ -1,26 +1,217 @@
 @import "tailwindcss";
 
+/* ------------------------------------------------------------------
+   Design tokens. Dark only. The raw variables keep the names from the
+   design spec; @theme maps them to Tailwind utilities (bg-panel,
+   text-muted, border-line, text-accent, ...).
+   ------------------------------------------------------------------ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #0d0f14;
+  --panel: #151923;
+  --border: #252b38;
+  --accent: #4fb3a1;
+  --accent-hover: #7fd4c4;
+  --text: #e8e4da;
+  --muted: #8a8f9c;
+  --up: #5cd18b;
+  --down: #f2716b;
+
+  /* Chart series only (validated for CVD separation and contrast on --panel).
+     Text never uses these; they color lines, keys and swatches. */
+  --series-pm: #2fa48f;
+  --series-ks: #d17a3f;
+
+  color-scheme: dark;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-line: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-fg: var(--text);
+  --color-muted: var(--muted);
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --color-series-pm: var(--series-pm);
+  --color-series-ks: var(--series-ks);
+
+  --font-display: var(--font-instrument-serif), "Iowan Old Style", Georgia, serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", monospace;
+
+  --animate-ticker: ticker var(--ticker-duration, 70s) linear infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes ticker {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  html {
+    background: var(--bg);
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--accent) 35%, transparent);
+    color: var(--text);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+}
+
+/* Numbers: monospace, tabular, never jumping width. */
+@utility num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-feature-settings: "tnum", "zero";
+  letter-spacing: -0.01em;
+}
+
+/* Thin grain over everything. Fixed so it doesn't scroll with content. */
+.grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* Ticker: pauses on hover/focus, becomes a plain scroller with reduced motion. */
+.ticker:hover .ticker-track,
+.ticker:focus-within .ticker-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker {
+    overflow-x: auto;
+  }
+  .ticker-track {
+    animation: none !important;
+  }
+  .ticker-dup {
+    display: none;
+  }
+}
+
+/* Hero headline: the same line, printed twice, slightly out of register.
+   The ghost is generated content with empty alt text ("/ \"\""), so it is
+   decoration only: excluded from the accessibility tree and from contrast
+   checks, while the real headline stays plain text. */
+.headline {
+  position: relative;
+  isolation: isolate;
+}
+.headline::before {
+  content: attr(data-ghost);
+  content: attr(data-ghost) / "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  color: color-mix(in oklab, var(--accent) 45%, transparent);
+  pointer-events: none;
+  user-select: none;
+  transform: translate3d(var(--gx, 0.055em), var(--gy, 0.035em), 0);
+  transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.1, 1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .headline::before {
+    /* backwards fill: starts in register, then eases to the offset set above */
+    animation: ghost-in 1.5s cubic-bezier(0.2, 0.7, 0.1, 1) 0.35s backwards;
+  }
+}
+
+@keyframes ghost-in {
+  from {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+}
+
+/* Accordion panel height animation via grid rows. */
+.accordion-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 240ms ease;
+}
+.accordion-panel[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+.accordion-panel > div {
+  overflow: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+  .accordion-panel {
+    transition: none;
+  }
+}
+
+/* Skeleton shimmer; static under reduced motion. */
+.skeleton {
+  background: linear-gradient(90deg, var(--panel) 0%, #1c2130 50%, var(--panel) 100%);
+  background-size: 200% 100%;
+  animation: skeleton 1.6s ease-in-out infinite;
+  border-radius: 4px;
+}
+@keyframes skeleton {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
 }

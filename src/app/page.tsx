@@ -1,69 +1,142 @@
-import Image from "next/image";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { AutoRefresh } from "@/components/AutoRefresh";
+import { Footer } from "@/components/Footer";
+import { Nav } from "@/components/Nav";
+import { TickerSkeleton } from "@/components/Ticker";
+import { CtaBand } from "@/components/landing/CtaBand";
+import { DataFrom } from "@/components/landing/DataFrom";
+import { Faq } from "@/components/landing/Faq";
+import { FeatureSection } from "@/components/landing/FeatureSection";
+import { Hero } from "@/components/landing/Hero";
+import { HowItWorks } from "@/components/landing/HowItWorks";
+import {
+  AlertChips,
+  LiveAlertForm,
+  LiveDataFrom,
+  LivePreview,
+  LiveStats,
+  LiveTicker,
+  MoverChips,
+  MoverVisual,
+  SpreadChips,
+  SpreadVisual,
+} from "@/components/landing/Live";
+import { AlertFormSkeleton, ArtSkeleton, ChipsSkeleton, PreviewSkeleton } from "@/components/landing/Skeletons";
+import { StatCardsSkeleton } from "@/components/landing/StatCards";
+import { BlockError } from "@/components/ui/BlockError";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
+
+/** Live block: its own loading skeleton and its own error boundary. */
+function Live({ label, fallback, children }: { label: string; fallback: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <BlockError label={label}>
+      <Suspense fallback={fallback}>{children}</Suspense>
+    </BlockError>
+  );
+}
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <>
+      <AutoRefresh />
+      <Live label="live gaps" fallback={<TickerSkeleton />}>
+        <LiveTicker />
+      </Live>
+      <Nav />
+      <main id="main">
+        <Hero
+          preview={
+            <Live label="the screener preview" fallback={<PreviewSkeleton />}>
+              <LivePreview />
+            </Live>
+          }
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+        <Live label="market summary" fallback={<StatCardsSkeleton />}>
+          <LiveStats />
+        </Live>
+        <Suspense fallback={<DataFrom />}>
+          <LiveDataFrom />
+        </Suspense>
+
+        <FeatureSection
+          id="spreads"
+          eyebrow="Spreads"
+          title="Every event, measured across venues."
+          body="Each event is paired by hand across venues and priced side by side. The gap is the difference in yes probability, in percentage points, refreshed every 30 seconds."
+          bullets={[
+            "Sorted by widest gap, so disagreements surface first",
+            "Filter by politics, economics, sports and more",
+            "Stale prices are flagged, never quietly mixed in",
+          ]}
+          chipsLabel="Widest gaps right now"
+          chips={
+            <Live label="the widest gaps" fallback={<ChipsSkeleton />}>
+              <SpreadChips />
+            </Live>
+          }
+          visual={
+            <Live label="the spread chart" fallback={<ArtSkeleton />}>
+              <SpreadVisual />
+            </Live>
+          }
+        />
+
+        <FeatureSection
+          id="movers"
+          reverse
+          eyebrow="Movers"
+          title="Ask why it moved before you ask whether to bet."
+          body="When the odds jump, Parallax lines the move up against recent headlines for that event, so you can see what the market may be reacting to."
+          bullets={[
+            "Biggest 24-hour moves across both venues",
+            "Headlines matched to each event's keywords",
+            "Odds history and gap history on one chart",
+          ]}
+          chipsLabel="Biggest 24h moves"
+          chips={
+            <Live label="the biggest moves" fallback={<ChipsSkeleton />}>
+              <MoverChips />
+            </Live>
+          }
+          visual={
+            <Live label="the movers chart" fallback={<ArtSkeleton />}>
+              <MoverVisual />
+            </Live>
+          }
+        />
+
+        <FeatureSection
+          id="alerts"
+          eyebrow="Alerts"
+          title="Tell me when the gap opens."
+          body="Pick an event and a threshold. When the two venues drift that far apart, the alert opens. No account, and you can remove it any time."
+          bullets={[
+            "Thresholds from 1 to 20 percentage points",
+            "One alert per event, checked against live gaps",
+            "Saved in this browser while alerts are in early access",
+          ]}
+          chipsLabel="Close to a 5pp gap"
+          chips={
+            <Live label="events near a 5pp gap" fallback={<ChipsSkeleton />}>
+              <AlertChips />
+            </Live>
+          }
+          visual={
+            <Live label="alerts" fallback={<AlertFormSkeleton />}>
+              <LiveAlertForm />
+            </Live>
+          }
+        />
+
+        <HowItWorks />
+        <Faq />
+        <CtaBand />
       </main>
-    </div>
+      <Footer />
+    </>
   );
 }

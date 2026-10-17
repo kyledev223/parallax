@@ -1,0 +1,202 @@
+{
+  "$comment": "Curated pairs of equivalent markets across venues. Each pair must ask the same question, resolve on the same date window, and use compatible rules. Verified against live Polymarket Gamma and Kalshi Trade API data on 2026-10-16. See README > Adding an event pair.",
+  "pairs": [
+    {
+      "id": "house-control-2026",
+      "title": "Democrats win control of the House in 2026",
+      "shortName": "Dems take House",
+      "category": "Politics",
+      "resolutionDate": "2026-11-03",
+      "keywords": ["House majority", "midterms", "Democrats"],
+      "venues": {
+        "polymarket": { "slug": "will-the-democratic-party-control-the-house-after-the-2026-midterm-elections" },
+        "kalshi": { "ticker": "CONTROLH-2026-D", "seriesTicker": "CONTROLH" }
+      }
+    },
+    {
+      "id": "senate-control-2026",
+      "title": "Democrats win control of the Senate in 2026",
+      "shortName": "Dems take Senate",
+      "category": "Politics",
+      "resolutionDate": "2026-11-03",
+      "keywords": ["Senate majority", "midterms", "Democrats"],
+      "venues": {
+        "polymarket": { "slug": "will-the-democratic-party-control-the-senate-after-the-2026-midterm-elections" },
+        "kalshi": { "ticker": "CONTROLS-2026-D", "seriesTicker": "CONTROLS" }
+      }
+    },
+    {
+      "id": "texas-senate-2026",
+      "title": "Democrat wins the 2026 Texas Senate race",
+      "shortName": "Dem wins TX Senate",
+      "category": "Politics",
+      "resolutionDate": "2026-11-03",
+      "keywords": ["Texas Senate", "Talarico", "Paxton"],
+      "venues": {
+        "polymarket": { "slug": "will-the-democrats-win-the-texas-senate-race-in-2026" },
+        "kalshi": { "ticker": "SENATETX-26-D", "seriesTicker": "SENATETX" }
+      },
+      "notes": "Kalshi resolves on the party of the senator sworn in for the 2027 term; Polymarket on the party nominee who wins the election, including runoffs."
+    },
+    {
+      "id": "ohio-senate-2026",
+      "title": "Democrat wins the 2026 Ohio Senate race",
+      "shortName": "Dem wins OH Senate",
+      "category": "Politics",
+      "resolutionDate": "2026-11-03",
+      "keywords": ["Ohio Senate", "Sherrod Brown", "Husted"],
+      "venues": {
+        "polymarket": { "slug": "will-the-democrats-win-the-ohio-senate-race-in-2026" },
+        "kalshi": { "ticker": "SENATEOHS-26-D", "seriesTicker": "SENATEOHS" }
+      },
+      "notes": "Special election. Kalshi resolves on the senator sworn in; Polymarket on the race winner's party."
+    },
+    {
+      "id": "michigan-senate-2026",
+      "title": "Democrat wins the 2026 Michigan Senate race",
+      "shortName": "Dem wins MI Senate",
+      "category": "Politics",
+      "resolutionDate": "2026-11-03",
+      "keywords": ["Michigan Senate", "El-Sayed", "Mike Rogers"],
+      "venues": {
+        "polymarket": { "slug": "will-the-democrats-win-the-michigan-senate-race-in-2026" },
+        "kalshi": { "ticker": "SENATEMI-26-D", "seriesTicker": "SENATEMI" }
+      }
+    },
+    {
+      "id": "press-secretary-out-2026",
+      "title": "Katie Zacharia leaves as Press Secretary before 2027",
+      "shortName": "Press Sec out by 2027",
+      "category": "Politics",
+      "resolutionDate": "2026-12-31",
+      "keywords": ["Katie Zacharia", "press secretary"],
+      "venues": {
+        "polymarket": { "slug": "katie-zacharia-out-as-press-secretary-by-december-31" },
+        "kalshi": { "ticker": "KXZACHARIAOUT-26OCT-27JAN01", "seriesTicker": "KXZACHARIAOUT" }
+      }
+    },
+    {
+      "id": "fed-october-2026-hold",
+      "title": "Fed holds rates at the October 2026 meeting",
+      "shortName": "Fed holds in Oct",
+      "category": "Economics",
+      "resolutionDate": "2026-10-28",
+      "keywords": ["Federal Reserve", "FOMC", "interest rates"],
+      "venues": {
+        "polymarket": { "slug": "will-there-be-no-change-in-fed-interest-rates-after-the-october-2026-meeting-20260617190324031" },
+        "kalshi": { "ticker": "KXFEDDECISION-26OCT-H0", "seriesTicker": "KXFEDDECISION" }
+      }
+    },
+    {
+      "id": "fed-december-2026-hike",
+      "title": "Fed raises rates 25bps at the December 2026 meeting",
+      "shortName": "Fed hikes in Dec",
+      "category": "Economics",
+      "resolutionDate": "2026-12-09",
+      "keywords": ["Federal Reserve", "rate hike", "FOMC"],
+      "venues": {
+        "polymarket": { "slug": "will-the-fed-increase-interest-rates-by-25-bps-after-the-december-2026-meeting-20260729232808636" },
+        "kalshi": { "ticker": "KXFEDDECISION-26DEC-H25", "seriesTicker": "KXFEDDECISION" }
+      }
+    },
+    {
+      "id": "world-series-brewers-2026",
+      "title": "Milwaukee Brewers win the 2026 World Series",
+      "shortName": "Brewers win WS",
+      "category": "Sports",
+      "resolutionDate": "2026-10-31",
+      "keywords": ["Brewers", "World Series"],
+      "venues": {
+        "polymarket": { "slug": "will-the-milwaukee-brewers-win-the-2026-world-series" },
+        "kalshi": { "ticker": "KXMLB-26-MIL", "seriesTicker": "KXMLB" }
+      }
+    },
+    {
+      "id": "super-bowl-49ers-2027",
+      "title": "San Francisco 49ers win the Super Bowl in February 2027",
+      "shortName": "49ers win SB",
+      "category": "Sports",
+      "resolutionDate": "2027-02-14",
+      "keywords": ["49ers", "Super Bowl"],
+      "venues": {
+        "polymarket": { "slug": "will-the-san-francisco-49ers-win-the-2027-nfl-league-championship" },
+        "kalshi": { "ticker": "KXSB-27-SF", "seriesTicker": "KXSB" }
+      }
+    },
+    {
+      "id": "ballon-dor-kane-2026",
+      "title": "Harry Kane wins the 2026 Ballon d'Or",
+      "shortName": "Kane wins Ballon d'Or",
+      "category": "Sports",
+      "resolutionDate": "2026-12-31",
+      "keywords": ["Ballon d'Or", "Harry Kane"],
+      "venues": {
+        "polymarket": { "slug": "will-harry-kane-win-the-2026-ballon-dor" },
+        "kalshi": { "ticker": "KXBALLONDOR-26-HKAN", "seriesTicker": "KXBALLONDOR" }
+      }
+    },
+    {
+      "id": "ucl-barcelona-2027",
+      "title": "Barcelona win the 2026–27 Champions League",
+      "shortName": "Barça win UCL",
+      "category": "Sports",
+      "resolutionDate": "2027-05-29",
+      "keywords": ["Barcelona", "Champions League"],
+      "venues": {
+        "polymarket": { "slug": "will-barcelona-win-the-2026-27-uefa-champions-league-championship-20260701202025560" },
+        "kalshi": { "ticker": "KXUCL-27-BAR", "seriesTicker": "KXUCL" }
+      }
+    },
+    {
+      "id": "lol-worlds-geng-2026",
+      "title": "Gen.G win League of Legends Worlds 2026",
+      "shortName": "Gen.G win Worlds",
+      "category": "Sports",
+      "resolutionDate": "2026-11-29",
+      "keywords": ["Gen.G", "League of Legends Worlds"],
+      "venues": {
+        "polymarket": { "slug": "will-genptg-win-worlds-2026" },
+        "kalshi": { "ticker": "KXLOL-WORLDS26-GEN", "seriesTicker": "KXLOL" }
+      }
+    },
+    {
+      "id": "israel-pm-eizenkot",
+      "title": "Gadi Eizenkot becomes Israel's next prime minister",
+      "shortName": "Eizenkot Israel PM",
+      "category": "World",
+      "resolutionDate": "2026-10-27",
+      "keywords": ["Eizenkot", "Israel election", "prime minister"],
+      "venues": {
+        "polymarket": { "slug": "will-gadi-eizenkot-be-the-next-prime-minister-of-israel" },
+        "kalshi": { "ticker": "KXISRAELPM-26OCT27-GEIZ", "seriesTicker": "KXISRAELPM" }
+      },
+      "notes": "Election is October 27, 2026. Both resolve on who is sworn in afterward, which can take weeks; caretaker PMs do not count."
+    },
+    {
+      "id": "france-president-le-pen",
+      "title": "Marine Le Pen wins the next French presidential election",
+      "shortName": "Le Pen wins France",
+      "category": "World",
+      "resolutionDate": "2027-04-25",
+      "keywords": ["Marine Le Pen", "French presidential election"],
+      "venues": {
+        "polymarket": { "slug": "will-marine-le-pen-win-the-2027-french-presidential-election" },
+        "kalshi": { "ticker": "KXFRENCHPRES-27-MLEP", "seriesTicker": "KXFRENCHPRES" }
+      },
+      "notes": "Both cover the next election whenever it is held, including any runoff. Polymarket resolves to Other if no result is known by Dec 31, 2027."
+    },
+    {
+      "id": "bitcoin-100k-2026",
+      "title": "Bitcoin reaches $100,000 before 2027",
+      "shortName": "BTC hits $100k",
+      "category": "Crypto",
+      "resolutionDate": "2026-12-31",
+      "keywords": ["Bitcoin price", "BTC"],
+      "venues": {
+        "polymarket": { "slug": "will-bitcoin-reach-100000-by-december-31-2026-571-361-361" },
+        "kalshi": { "ticker": "KXBTCMAXY-26DEC31-99999.99", "seriesTicker": "KXBTCMAXY" }
+      },
+      "notes": "Different price sources: Kalshi uses the CF Benchmarks Bitcoin Real-Time Index; Polymarket uses Binance BTC/USDT 1-minute highs. Small gaps can come from that alone."
+    }
+  ]
+}
